@@ -60,6 +60,7 @@ augment class Duration {
       }
 
       default {
+        $time-val = self;
         SECOND;
       }
 
