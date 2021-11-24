@@ -66,8 +66,7 @@ augment class Duration {
   method components {
     my $t = self;
     do gather for self.component-order.kv -> $k, &m {
-      my $v = &m($t).Int;
-      if $v > 0 {
+      if &m($t).Int -> $v {
         take [ $v, &m.date-component-value ];
         $t -= $v * self.inv-component-order[$k](self);
         last if $t <= 0;
