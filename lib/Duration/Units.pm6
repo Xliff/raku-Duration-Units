@@ -64,21 +64,15 @@ augment class Duration {
   }
 
   method components {
-    my @components;
     my $t = self;
-    for self.component-order.kv -> $k, &m {
+    do gather for self.component-order.kv -> $k, &m {
       my $v = &m($t).Int;
-
       if $v > 0 {
-        my $mk = &m.date-component-value;
-        @components.push: [ $v, $mk ];
-
-        my $im = self.inv-component-order[$k];
-        $t -= $v * $im(self);
+        take [ $v, &m.date-component-value ];
+        $t -= $v * self.inv-component-order[$k](self);
         last if $t <= 0;
       }
     }
-    @components;
   }
 
   multi method ago {
