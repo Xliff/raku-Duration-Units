@@ -63,49 +63,24 @@ augment class Duration {
     @co;
   }
 
-  method components {
+  method components (:$quick = False) {
     my $t = self;
     do gather for self.component-order.kv -> $k, &m {
       if &m($t).Int -> $v {
         take [ $v, &m.date-component-value ];
+        last if $quick;
         $t -= $v * self.inv-component-order[$k](self);
         last if $t <= 0;
       }
     }
   }
 
-  multi method ago {
-    self.components.map({
+  multi method ago (:fuzzy(:$quick) = False){
+    self.components(:$quick).map({
       my $u = .[1].Str;
 
       "{ .[0] } { .[0] == 1 ?? $u !! %names{$u} }"
     }).join(' ');
-  }
-  multi method ago (:$fuzzy!) {
-    my $almost = True;
-    my $time-val;
-    my $time-unit = do {
-
-      when ($time-val = self.centuries) >= 0.9 { CENTURY }
-      when ($time-val = self.decades)   >= 0.9 { DECADE  }
-      when ($time-val = self.years)     >= 0.9 { YEAR    }
-      when ($time-val = self.months)    >= 0.9 { MONTH   }
-      when ($time-val = self.weeks)     >= 0.9 { WEEK    }
-      when ($time-val = self.days)      >= 0.9 { DAY     }
-      when ($time-val = self.hours)     >= 0.9 { HOUR    }
-      when ($time-val = self.minutes)   >= 0.9 { MINUTE  }
-
-      default {
-        $time-val = self;
-        SECOND;
-      }
-    }
-
-    $almost = False if $time-val >= 1 && $time-unit != SECOND;
-
-    my $tu = $time-unit.Str;
-    "{ $almost ?? 'almost' !! '' }{ $time-val } {
-        $time-val != 1 ?? $tu !! %names{$tu} }"
   }
 
 }
