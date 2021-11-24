@@ -31,15 +31,15 @@ my %names = (
 
 augment class Duration {
 
-  method seconds   is date-component(SECOND)   { self                  }
-  method minutes   is date-component(MINUTE)   { self         / 60     }
-  method hours     is date-component(HOUR)     { self.minutes / 60     }
-  method days      is date-component(DAY)      { self.hours   / 24     }
-  method weeks     is date-component(WEEK)     { self.days    / 7      }
-  method years     is date-component(YEAR)     { self.days    / 365.25 }
-  method months    is date-component(MONTH)    { self.years   * 12     }
-  method decades   is date-component(DECADE)   { self.years   / 10     }
-  method centuries is date-component(CENTURY)  { self.years   / 100    }
+  method seconds       is date-component(SECOND)       { self                      }
+  method minutes       is date-component(MINUTE)       { self         / 60         }
+  method hours         is date-component(HOUR)         { self.minutes / 60         }
+  method days          is date-component(DAY)          { self.hours   / 24         }
+  method weeks         is date-component(WEEK)         { self.days    / 7          }
+  method years         is date-component(YEAR)         { self.days    / 365.25     }
+  method months        is date-component(MONTH)        { self.years   * 12         }
+  method decades       is date-component(DECADE)       { self.years   / 10         }
+  method centuries     is date-component(CENTURY)      { self.years   / 100        }
 
   method inv-seconds   is inv-date-component(SECOND)   { 1                         }
   method inv-minutes   is inv-date-component(MINUTE)   { self.inv-seconds * 60     }
