@@ -41,6 +41,15 @@ augment class Duration {
   method decades       is date-component(DECADE)       { self.years   / 10         }
   method centuries     is date-component(CENTURY)      { self.years   / 100        }
 
+  method secs  { self.seconds   }
+  method mins  { self.minutes   }
+  method hrs   { self.hours     }
+  method wks   { self.weeks     }
+  method mnths { self.months    }
+  method yrs   { self.years     }
+  method decs  { self.decades   }
+  method cens  { self.centuries }
+
   method inv-seconds   is inv-date-component(SECOND)   { 1                         }
   method inv-minutes   is inv-date-component(MINUTE)   { self.inv-seconds * 60     }
   method inv-hours     is inv-date-component(HOUR)     { self.inv-minutes * 60     }
@@ -88,6 +97,12 @@ augment class Duration {
 multi sub postfix:<s> ($a) is export {
   postfix:<seconds>($a);
 }
+multi sub postfix:<sec> ($a) is export {
+  postfix:<seconds>($a);
+}
+multi sub postfix:<secs> ($a) is export {
+  postfix:<seconds>($a);
+}
 multi sub postfix:<second> ($a) is export {
   postfix:<seconds>($a);
 }
@@ -98,6 +113,12 @@ multi sub postfix:<seconds> ($a) is export {
 multi sub postfix:<m> ($a) is export {
   postfix:<minutes>($a);
 }
+multi sub postfix:<min> ($a) is export {
+  postfix:<minutes>($a);
+}
+multi sub postfix:<mins> ($a) is export {
+  postfix:<minutes>($a);
+}
 multi sub postfix:<minute> ($a) is export {
   postfix:<minutes>($a);
 }
@@ -106,6 +127,12 @@ multi sub postfix:<minutes> ($a) is export {
 }
 
 multi sub postfix:<h> ($a) is export {
+  postfix:<hours>($a);
+}
+multi sub postfix:<hr> ($a) is export {
+  postfix:<hours>($a);
+}
+multi sub postfix:<hrs> ($a) is export {
   postfix:<hours>($a);
 }
 multi sub postfix:<hour> ($a) is export {
@@ -128,6 +155,12 @@ multi sub postfix:<days> ($a) is export {
 multi sub postfix:<w> ($a) is export {
   postfix:<weeks>($a);
 }
+multi sub postfix:<wk> ($a) is export {
+  postfix:<weeks>($a);
+}
+multi sub postfix:<wks> ($a) is export {
+  postfix:<weeks>($a);
+}
 multi sub postfix:<week> ($a) is export {
   postfix:<weeks>($a);
 }
@@ -138,6 +171,12 @@ multi sub postfix:<weeks> ($a) is export {
 multi sub postfix:<y> ($a) is export {
   postfix:<years>($a);
 }
+multi sub postfix:<yr> ($a) is export {
+  postfix:<years>($a);
+}
+multi sub postfix:<yrs> ($a) is export {
+  postfix:<years>($a);
+}
 multi sub postfix:<year> ($a) is export {
   postfix:<years>($a);
 }
@@ -146,6 +185,12 @@ multi sub postfix:<years> ($a) is export {
 }
 
 multi sub postfix:<mon> ($a) is export {
+  postfix:<months>($a);
+}
+multi sub postfix:<mnth> ($a) is export {
+  postfix:<months>($a);
+}
+multi sub postfix:<mnths> ($a) is export {
   postfix:<months>($a);
 }
 multi sub postfix:<month> ($a) is export {
