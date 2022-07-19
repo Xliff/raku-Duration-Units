@@ -2,7 +2,17 @@ use v6;
 
 use MONKEY-TYPING;
 
-my enum TimeUnit <SECOND MINUTE HOUR DAY WEEK MONTH YEAR DECADE CENTURY>;
+my enum TimeUnit is export <
+  SECOND
+  MINUTE
+  HOUR
+  DAY
+  WEEK
+  MONTH
+  YEAR
+  DECADE
+  CENTURY
+>;
 
 role DateComponent[\T] {
   method date-component-value { T }
@@ -72,10 +82,11 @@ augment class Duration {
     @co;
   }
 
-  method components (:$quick = False) {
+  method components ( :$max-unit = CENTURY, :$quick = False ) {
     my $t = self;
     do gather for self.component-order.kv -> $k, &m {
       if &m($t).Int -> $v {
+        next if $max-unit.Int < &m.date-component-value.Int;
         take [ $v, &m.date-component-value ];
         last if $quick;
         $t -= $v * self.inv-component-order[$k](self);
@@ -84,12 +95,16 @@ augment class Duration {
     }
   }
 
-  multi method ago (:fuzzy(:$quick) = False){
-    self.components(:$quick).map({
+  multi method ago (
+    :fuzzy(:$quick) = False,
+    :$max-unit      = CENTURY,
+    :$separator     = ', '
+  ) {
+    self.components(:$quick, :$max-unit).map({
       my $u = .[1].Str;
 
-      "{ .[0] } { .[0] == 1 ?? $u !! %names{$u} }"
-    }).join(' ');
+      "{ .[0] } { .[0] == 1 ?? $u.lc !! %names{$u} }"
+    }).join($separator);
   }
 
 }
