@@ -35,6 +35,7 @@ my %names = (
   DAY     => 'days',
   WEEK    => 'weeks',
   MONTH   => 'months',
+  YEAR    => 'years',
   DECADE  => 'decades',
   CENTURY => 'centuries'
 );
