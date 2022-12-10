@@ -97,10 +97,31 @@ augment class Duration {
   }
 
   multi method ago (
-    :fuzzy(:$quick) = False,
-    :$max-unit      = CENTURY,
-    :$separator     = ', '
+    :$max-unit            is copy,
+    :fuzzy(:$quick)                = False,
+    :seconds(:$second)             = False,
+    :minutes(:$minute)             = False,
+    :hours(:$hour)                 = False,
+    :days(:$day)                   = False,
+    :weeks(:$week)                 = False,
+    :months(:$month)               = False,
+    :years(:$year)                 = False,
+    :decades(:$decade)             = False,
+    :century(:$centuries)          = True,
+    :$separator                    = ', '
   ) {
+    $max-unit //= do {
+       when $second.so    { SECOND  }
+       when $minute.so    { MINUTE  }
+       when $hour.so      { HOUR    }
+       when $day.so       { DAY     }
+       when $week.so      { WEEK    }
+       when $month.so     { MONTH   }
+       when $year.so      { YEAR    }
+       when $decade.so    { DECADE  }
+       when $centuries.so { CENTURY }
+    }
+
     self.components(:$quick, :$max-unit).map({
       my $u = .[1].Str;
 
