@@ -40,7 +40,7 @@ my %names = (
   CENTURY => 'centuries'
 );
 
-augment class Duration {
+role Duration::Units {
 
   method seconds       is date-component(SECOND)       { self                      }
   method minutes       is date-component(MINUTE)       { self         / 60         }
@@ -83,7 +83,59 @@ augment class Duration {
     @co;
   }
 
-  method components ( :$max-unit = CENTURY, :$quick = False ) {
+  method get-max-unit (
+    :seconds(:$second)             = False,
+    :minutes(:$minute)             = False,
+    :hours(:$hour)                 = False,
+    :days(:$day)                   = False,
+    :weeks(:$week)                 = False,
+    :months(:$month)               = False,
+    :years(:$year)                 = False,
+    :decades(:$decade)             = False,
+    :century(:$centuries)          = True
+  ) {
+    do {
+      when $second.so    { SECOND  }
+      when $minute.so    { MINUTE  }
+      when $hour.so      { HOUR    }
+      when $day.so       { DAY     }
+      when $week.so      { WEEK    }
+      when $month.so     { MONTH   }
+      when $year.so      { YEAR    }
+      when $decade.so    { DECADE  }
+      when $centuries.so { CENTURY }
+    }
+  }
+
+  multi method components (
+    :$quick                        = False,
+
+    :seconds(:$second)             = False,
+    :minutes(:$minute)             = False,
+    :hours(:$hour)                 = False,
+    :days(:$day)                   = False,
+    :weeks(:$week)                 = False,
+    :months(:$month)               = False,
+    :years(:$year)                 = False,
+    :decades(:$decade)             = False,
+    :century(:$centuries)          = True
+  ) {
+    samewith(
+      self.get-max-unit(
+        :$second,
+        :$minute,
+        :$hour,
+        :$day,
+        :$week,
+        :$month,
+        :$year,
+        :$decade,
+        :$centuries
+      ),
+      :$quick
+    );
+  }
+  multi method components ( $max-unit = CENTURY, :$quick = False ) {
     my $t = self;
     do gather for self.component-order.kv -> $k, &m {
       if &m($t).Int -> $v {
@@ -110,17 +162,17 @@ augment class Duration {
     :century(:$centuries)          = True,
     :$separator                    = ', '
   ) {
-    $max-unit //= do {
-       when $second.so    { SECOND  }
-       when $minute.so    { MINUTE  }
-       when $hour.so      { HOUR    }
-       when $day.so       { DAY     }
-       when $week.so      { WEEK    }
-       when $month.so     { MONTH   }
-       when $year.so      { YEAR    }
-       when $decade.so    { DECADE  }
-       when $centuries.so { CENTURY }
-    }
+    $max-unit //= self.get-max-unit(
+      :$second,
+      :$minute,
+      :$hour,
+      :$day,
+      :$week,
+      :$month,
+      :$year,
+      :$decade,
+      :$centuries
+    );
 
     self.components(:$quick, :$max-unit).map({
       my $u = .[1].Str;
