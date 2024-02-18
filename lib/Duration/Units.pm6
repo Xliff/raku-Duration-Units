@@ -39,6 +39,17 @@ my %names = (
   DECADE  => 'decades',
   CENTURY => 'centuries'
 );
+my %abrv = (
+  SECOND  => 'sec',
+  MINUTE  => 'min',
+  HOUR    => 'hrs',
+  DAY     => 'days',
+  WEEK    => 'wks',
+  MONTH   => 'mon',
+  YEAR    => 'yrs',
+  DECADE  => 'dec',
+  CENTURY => 'cen'
+);
 
 role Duration::Units {
 
@@ -142,7 +153,8 @@ role Duration::Units {
         next if $max-unit.Int < &m.date-component-value.Int;
         take [ $v, &m.date-component-value ];
         last if $quick;
-        $t -= $v * self.inv-component-order[$k](self);
+        $t = ( $t - $v * self.inv-component-order[$k](self) )
+          but Duration::Units;
         last if $t <= 0;
       }
     }
@@ -151,17 +163,21 @@ role Duration::Units {
   multi method ago (
     :$max-unit            is copy,
     :fuzzy(:$quick)                = False,
-    :seconds(:$second)             = False,
-    :minutes(:$minute)             = False,
-    :hours(:$hour)                 = False,
+    :sec(:seconds(:$second))       = False,
+    :min(:minutes(:$minute))       = False,
+    :hr(:hours(:$hour))            = False,
     :days(:$day)                   = False,
-    :weeks(:$week)                 = False,
-    :months(:$month)               = False,
-    :years(:$year)                 = False,
-    :decades(:$decade)             = False,
-    :century(:$centuries)          = True,
-    :$separator                    = ', '
+    :wk(:wks(:weeks(:$week)))      = False,
+    :mon(:months(:$month))         = False,
+    :yr(:yrs(:years(:$year)))      = False,
+    :dec(:decades(:$decade))       = False,
+    :cen(:century(:$centuries))    = False,
+    :$separator                    = ', ',
+    :$unit-separator               = '',
+    :abbr(:$abbreviated)           = False,
+    :init(:$initial)               = False
   ) {
+    my $rep := $abbreviated ?? %names !! %abrv;
     $max-unit //= self.get-max-unit(
       :$second,
       :$minute,
@@ -177,7 +193,17 @@ role Duration::Units {
     self.components(:$quick, :$max-unit).map({
       my $u = .[1].Str;
 
-      "{ .[0] } { .[0] == 1 ?? $u.lc !! %names{$u} }"
+      my $w = $abbreviated ?? $rep{$u} !! $u.lc;
+      if $initial {
+        $w = do given $max-unit {
+          when    MONTH  { 'mn'  }
+          when    DECADE { 'dec' }
+          default        { $w.comb.head }
+        }
+      }
+
+      # cw: What to do about min-vs-mon or day-vs-dec
+      "{ .[0] }{ $unit-separator }{ $w }"
     }).join($separator);
   }
 
@@ -196,7 +222,7 @@ multi sub postfix:<second> ($a) is export {
   postfix:<seconds>($a);
 }
 multi sub postfix:<seconds> ($a) is export {
-  Duration.new($a);
+  Duration.new($a) but Duration::Units;
 }
 
 multi sub postfix:<m> ($a) is export {
@@ -212,7 +238,7 @@ multi sub postfix:<minute> ($a) is export {
   postfix:<minutes>($a);
 }
 multi sub postfix:<minutes> ($a) is export {
-  Duration.new(postfix:<seconds>($a) * 60);
+  Duration.new(postfix:<seconds>($a) * 60) but Duration::Units;
 }
 
 multi sub postfix:<h> ($a) is export {
@@ -228,7 +254,7 @@ multi sub postfix:<hour> ($a) is export {
   postfix:<hours>($a);
 }
 multi sub postfix:<hours> ($a) is export {
-  Duration.new(postfix:<minutes>($a) * 60)
+  Duration.new(postfix:<minutes>($a) * 60) but Duration::Units;
 }
 
 multi sub postfix:<d> ($a) is export {
@@ -238,7 +264,7 @@ multi sub postfix:<day> ($a) is export {
   postfix:<days>($a);
 }
 multi sub postfix:<days> ($a) is export {
-  Duration.new(postfix:<hours>($a) * 24);
+  Duration.new(postfix:<hours>($a) * 24) but Duration::Units;
 }
 
 multi sub postfix:<w> ($a) is export {
@@ -254,7 +280,7 @@ multi sub postfix:<week> ($a) is export {
   postfix:<weeks>($a);
 }
 multi sub postfix:<weeks> ($a) is export {
-  Duration.new(postfix:<days>($a) * 7);
+  Duration.new(postfix:<days>($a) * 7) but Duration::Units;
 }
 
 multi sub postfix:<y> ($a) is export {
@@ -270,7 +296,7 @@ multi sub postfix:<year> ($a) is export {
   postfix:<years>($a);
 }
 multi sub postfix:<years> ($a) is export {
-  Duration.new(postfix:<days>($a) * 365.24);
+  Duration.new(postfix:<days>($a) * 365.24) but Duration::Units;
 }
 
 multi sub postfix:<mon> ($a) is export {
@@ -286,5 +312,10 @@ multi sub postfix:<month> ($a) is export {
   postfix:<months>($a);
 }
 multi sub postfix:<months> ($a) is export {
-  Duration.new( &postfix:<years>($a) / 12 );
+  Duration.new( &postfix:<years>($a) / 12 ) but Duration::Units;
+}
+
+multi sub infix:<-> (DateTime $a, DateTime $b) is export {
+  # cw: We have to push $b back one second, or it will look off by a second!
+  callwith( $a, $b.earlier( :1second ) ) but Duration::Units;
 }
