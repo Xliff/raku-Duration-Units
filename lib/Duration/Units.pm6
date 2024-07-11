@@ -161,21 +161,22 @@ role Duration::Units {
   }
 
   multi method ago (
-    :$max-unit            is copy,
-    :fuzzy(:$quick)                = False,
-    :sec(:seconds(:$second))       = False,
-    :min(:minutes(:$minute))       = False,
-    :hr(:hours(:$hour))            = False,
-    :days(:$day)                   = False,
-    :wk(:wks(:weeks(:$week)))      = False,
-    :mon(:months(:$month))         = False,
-    :yr(:yrs(:years(:$year)))      = False,
-    :dec(:decades(:$decade))       = False,
-    :cen(:century(:$centuries))    = False,
-    :$separator                    = ', ',
-    :$unit-separator               = '',
-    :abbr(:$abbreviated)           = False,
-    :init(:$initial)               = False
+    :fuzzy(:$quick)             = False,
+    :sec(:seconds(:$second))    = False,
+    :min(:minutes(:$minute))    = False,
+    :hr(:hours(:$hour))         = False,
+    :days(:$day)                = False,
+    :wk(:wks(:weeks(:$week)))   = False,
+    :mon(:months(:$month))      = False,
+    :yr(:yrs(:years(:$year)))   = False,
+    :dec(:decades(:$decade))    = False,
+    :cen(:century(:$centuries)) = False,
+    :$separator                 = ', ',
+    :$unit-separator            = ' ',
+    :abbr(:$abbreviated)        = False,
+    :init(:$initial)            = False,
+
+    :max_unit(:max_units(:max-units(:$max-unit))) is copy,
   ) {
     my $rep := $abbreviated ?? %names !! %abrv;
     $max-unit //= self.get-max-unit(
@@ -200,11 +201,28 @@ role Duration::Units {
           when    DECADE { 'dec' }
           default        { $w.comb.head }
         }
+      } elsif .[0] > 1 {
+        my $ies = False;
+        $ies = True if $w.ends-with('y') && $w ne 'day';
+        $w .= chop if $ies;
+        $w ~= $ies ?? 'ies' !! 's'
       }
 
       # cw: What to do about min-vs-mon or day-vs-dec
       "{ .[0] }{ $unit-separator }{ $w }"
     }).join($separator);
+  }
+
+  method add ($b) {
+    (self + $b) but Duration::Units;
+  }
+
+  method subtract ($b) {
+    (self - $b) but Duration::Units;
+  }
+
+  method factor ($f) {
+    (self * $f) but Duration::Units;
   }
 
 }
